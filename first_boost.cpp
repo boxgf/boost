@@ -26,8 +26,8 @@ int main()
 
   // Connect a HelloWorld slot
   //HelloWorld hello;                              // hello is a function object
-  sig.connect(Hello());                            // connect te signal to hello fn object
-  sig.connect(World());
+  sig.connect(0,Hello());                            // connect te signal to hello fn object
+  sig.connect(1,World());
 
   // Call all of the slots
   sig();
