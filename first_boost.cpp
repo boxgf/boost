@@ -1,5 +1,5 @@
 #include <iostream>
-#include <boost/signals2.hpp>
+#include <boost/signals2/signal.hpp>
 struct Hello
 {
   void operator()() const                       // function object?
@@ -26,8 +26,8 @@ int main()
 
   // Connect a HelloWorld slot
   //HelloWorld hello;                              // hello is a function object
-  sig.connect(0,Hello());                            // connect te signal to hello fn object
-  sig.connect(1,World());
+  sig.connect(100,Hello());                            // connect te signal to hello fn object
+  sig.connect(World(),boost::signals2::at_front);
 
   // Call all of the slots
   sig();
