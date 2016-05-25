@@ -1,5 +1,6 @@
 #include <iostream>
 #include <boost/signals2/signal.hpp>
+#include <vector>
 struct Hello
 {
   void operator()() const                       // function object?
@@ -48,28 +49,24 @@ float sum(float x, float y) { return x + y; }
 float difference(float x, float y) { return x - y; }
 
 
-
-// combiner which returns the maximum value returned by all slots
-template<typename T>
-struct maximum
+// aggregate_values is a combiner which places all the values returned
+// from slots into a container
+template<typename Container>
+struct aggregate_values
 {
-  typedef T result_type;
+  typedef Container result_type;
 
   template<typename InputIterator>
-  T operator()(InputIterator first, InputIterator last) const   // operator "()" gets the reference to the inputs by default? ans: When a maximum object is invoked,
-                                                                //it is given an input iterator sequence [first, last) that includes the results of calling all of the slots
+  Container operator()(InputIterator first, InputIterator last) const  // operator "()" gets the reference to the inputs by default? ans: When a maximum object is invoked,
+                                                                       //it is given an input iterator sequence [first, last) that includes the results of calling all of the slots
   {
-    // If there are no slots to call, just return the
-    // default-constructed value
-    if(first == last ) return T();
-    T max_value = *first++;
-    while (first != last) {
-      if (max_value < *first)
-        max_value = *first;
+    Container values;
+
+    while(first != last) {
+      values.push_back(*first);
       ++first;
     }
-
-    return max_value;
+    return values;
   }
 };
 
@@ -79,7 +76,7 @@ int main()
 {
 
  // Signal with no arguments and a void return value
-  boost::signals2::signal<float (float x, float y), maximum<float> > sig; // the second arguement is the combiner template arguement
+  boost::signals2::signal<float (float x, float y), aggregate_values<std::vector<float> > > sig; // the second arguement is the combiner template arguement
 
   // Connect a HelloWorld slot
   //HelloWorld hello;                               // hello is a function object
@@ -94,8 +91,16 @@ int main()
   sig.connect(&quotient);                          // use groups to reorder the sequnce the slots are called. Otherwise they are default ordered the way you connect
                                                    // ungrouped are called at end by default
 
-   std::cout << "maximum: " << sig(5, 3) << std::endl; // notice there is not *sig which was present when the return type was just float now it it
-  // Call all of the slots
+   std::vector<float> res= sig(5, 3);
+   for (unsigned int i =0; i < res.size(); i++)
+   {
+   std::cout<< res[i]<<" ";
 
-
+   }
+  std::cout<<"\n";
+  std::vector<float> results = sig(5, 3);
+  std::cout << "aggregate values: ";
+  std::copy(results.begin(), results.end(),
+    std::ostream_iterator<float>(std::cout, " ")); //how the fuck is he printing like that?
+  std::cout << "\n";
 }
